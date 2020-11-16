@@ -157,7 +157,7 @@ function endGame(){
   newRow.setString('Name', name);
   newRow.setString('Score', score);
   newRow.setString('Time', month()+"/"+day()+" "+hour()+":"+minute()+":"+second());
-  saveTable(records, './Records.csv', 'csv'); 
+  saveTable(records, 'Records', 'csv'); 
   
   background(152, 113, 153);
   textSize(32);
