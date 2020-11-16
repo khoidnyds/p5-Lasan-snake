@@ -13,12 +13,6 @@ var name = "Boss"
 
 function preload(){
   records = loadTable('Records.csv', 'csv', 'header');  
-  const credentials = Realm.Credentials.anonymous();
-  try {
-    const user = await app.logIn(credentials);
-  } catch(err) {
-    console.error("Failed to log in", err);
-  }
 }
 
 function setup(){
@@ -163,7 +157,7 @@ function endGame(){
   newRow.setString('Name', name);
   newRow.setString('Score', score);
   newRow.setString('Time', month()+"/"+day()+" "+hour()+":"+minute()+":"+second());
-  //saveTable(records, './Records.csv', 'csv'); 
+  saveTable(records, './Records.csv', 'csv'); 
   
   background(152, 113, 153);
   textSize(32);
