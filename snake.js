@@ -22,6 +22,7 @@ function Snake() {
 
     this.tail.unshift(createVector(this.pos.x, this.pos.y));
     this.tail.pop();
+    print(this.pos.x, this.pos.y)
     //move the snake
     if (this.pos.x >= width) {
       this.pos.x = 0;
@@ -31,12 +32,12 @@ function Snake() {
       this.pos.x = width - pixel_size;
       this.pos.y += this.speed.y * pixel_size;
     }
-    else if (this.pos.y >= 400) {
+    else if (this.pos.y >= 401) {
       this.pos.y = 0;
       this.pos.x += this.speed.x * pixel_size;
     }
     else if (this.pos.y < 0) {
-      this.pos.y = 400 - pixel_size;
+      this.pos.y = 420 - pixel_size;
       this.pos.x += this.speed.x * pixel_size;
     }
     else {
@@ -50,9 +51,6 @@ function Snake() {
   }
 
   this.checkDeath = function () {
-    // if(this.pos.x >= width || this.pos.y >= 400 || this.pos.x < 0 || this.pos.y < 0){
-    //   gameState = 'end';
-    // }
     for (var i = 0; i < this.tail.length; i++) {
       if (this.tail[i].x == this.pos.x && this.tail[i].y == this.pos.y) {
         gameState = 'update';

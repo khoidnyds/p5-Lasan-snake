@@ -3,8 +3,9 @@ var pixel_size = 20;
 var shots = [];
 var movement = [];
 var score = 0;
+var mode = ""
 var gameState = 'init';
-var timer = 60
+var timer_set = 600
 var button_arrow = [
   [300, 450],
   [350, 500],
@@ -14,58 +15,66 @@ var button_arrow = [
 var diameter = 50
 var name = ""
 var input
-// var img;
+var img_slow, img_med, img_fast
+var image_loc = [[50, 340], [150, 340], [250, 340]]
+var image_size = 64
 let highscore = []
 var song1
-var frame = 40
+var frame = 10
 
 function preload() {
+  // get data from firestore
   firebase.firestore().collection("Records").orderBy("score", "desc").limit(5)
     .get()
     .then(function (querySnapshot) {
       querySnapshot.forEach(function (doc) {
         console.log(doc.id, " => ", doc.data());
-        highscore.push([doc.data()['name'], doc.data()['score'], doc.data()['time']])
+        if (doc.data()['name'] == "") {
+          highscore.push(["Anonymous", doc.data()['score'], doc.data()['time'], doc.data()['mode']])
+        }
+        else {
+          highscore.push([doc.data()['name'], doc.data()['score'], doc.data()['time'], doc.data()['mode']])
+        }
       });
     })
-  img = loadImage('snake.jpg');
+  img_slow = loadImage("slow.jpg")
+  img_med = loadImage("slow.jpg")
+  img_fast = loadImage("slow.jpg")
 }
 
 function setup() {
   createCanvas(400, 600);
-  frameRate(frame);
-  gameState = "init"
+  frameRate(10);
 }
 
 function initGame() {
+  // background color
   background(152, 113, 153);
-  // image(img, 0, 0, 100, 100);
 
+  //draw SNAKE GAME
+  textSize(55);
+  fill(237, 209, 233)
+  text("SNAKE GAME", 20, 130);
+
+  // draw snake icon
   noFill()
   strokeWeight(8)
   beginShape();
   vertex(180, 160);
-
   quadraticVertex(220, 160, 190, 190);
   quadraticVertex(160, 220, 230, 210);
-
-
   circle(176, 160, 8)
   circle(167, 161, 9)
   circle(171, 154, 5)
-
   endShape();
   strokeWeight(1);
   noStroke()
   fill(255, 181, 251)
   circle(171, 155, 6)
-  fill(255, 255)
-  line(30, 50, 172, 169)
-  fill(152, 113, 153);
-  rect(0, 400, 400, 200);
 
+  // draw game instructions
   fill(139, 214, 189, 200);
-  rect(20, 420, 360, 160);
+  rect(0, 420, 400, 180);
   stroke(0, 0, 0)
   fill(150, 39, 69);
   rect(50, 450, 20, 20);
@@ -73,45 +82,54 @@ function initGame() {
   rect(50, 490, 20, 20);
   fill(66, 61, 122);
   rect(50, 530, 20, 20);
-  textSize(55);
-  fill(139, 214, 189);
-  nameWidht = textWidth(name);
-  fill(237, 209, 233)
-  text("SNAKE GAME", (width - nameWidht) / 2 - 170, 400 / 2 - 60);
-  textSize(20)
-  fill(139, 214, 189);
-  text("Your name:", (width - nameWidht) / 2 - 100, 400 / 2 + 50);
-  input = createInput("").attribute('maxlength', 10);
-  input.position(220, 248);
-
-  text("Highscore : " + highscore[0][0] + " " + highscore[0][1], (width - nameWidht) / 2 - 100, 400 / 2 + 90);
-
   noStroke()
   fill(54, 52, 53)
-  text("+10 score", (width - nameWidht) / 2 - 90, 400 / 2 + 265);
-  text("+ 3  score", (width - nameWidht) / 2 - 90, 400 / 2 + 305);
-  text("+ 1  score", (width - nameWidht) / 2 - 90, 400 / 2 + 345);
+  textSize(20)
+  text("+10 score", 100, 467);
+  text("+ 3  score", 100, 507);
+  text("+ 1  score", 100, 547);
   textSize(15)
   fill(54, 52, 53)
-  text("Limited time:", (width - nameWidht) / 2 + 80, 400 / 2 + 265);
+  text("Limited time", 260, 470);
   textSize(40)
   fill(255, 0, 0)
-  text("60s", (width - nameWidht) / 2 + 90, 400 / 2 + 310);
+  text("60s", 270, 520);
 
-  startBtn = createButton('Start here');
-  startBtn.position(width / 2 - startBtn.width / 2, 400 / 2 + 120);
-  startBtn.mousePressed(bobHi);
+  // draw input name box + highscore
+  nameWidht = textWidth(name);
+  textSize(20)
+  fill(139, 214, 189);
+  text("Your name:", 50, 250);
+  input = createInput("").attribute('maxlength', 10);
+  input.position(160, 250);
+  text("Top player: " + highscore[0][0] + " - Score: " + highscore[0][1], 50, 290);
+
+  // draw mode selection
+  textSize(15)
+  var level = "NOOB"
+  text(level, image_loc[0][0] + image_size / 2 - textWidth(level) / 2, image_loc[0][1] - 5);
+  image(img_slow, image_loc[0][0], image_loc[0][1]);
+  level = "PRO"
+  text(level, image_loc[1][0] + image_size / 2 - textWidth(level) / 2, image_loc[1][1] - 5);
+  image(img_med, image_loc[1][0], image_loc[1][1]);
+  level = "CRAZY"
+  text(level, image_loc[2][0] + image_size / 2 - textWidth(level) / 2, image_loc[2][1] - 5);
+  image(img_fast, image_loc[2][0], image_loc[2][1]);
 
   noLoop();
 }
 
-function bobHi() {
+function helloworld() {
   removeElements();
   name = input.value();
-  timer = 60
+
+  // restart game metrics
+  timer = timer_set
   score = 0
   gameState = 'play';
   frameCount = 1
+
+  // create Snake object
   snake = new Snake();
   setJelloShots(3, "green");
   setJelloShots(1, "red");
@@ -119,8 +137,8 @@ function bobHi() {
   loop();
 }
 
-
 function rotatePoint(point, degree, center) {
+  // helper for arrow function
   degree = radians(degree);
   var x = point[0]
   var y = point[1]
@@ -130,6 +148,7 @@ function rotatePoint(point, degree, center) {
 }
 
 function arrow(x, y, r, a) {
+  // draw arrows with specific direction
   noStroke()
   fill(71, 89, 97)
   circle(x, y, r)
@@ -148,38 +167,43 @@ function arrow(x, y, r, a) {
 }
 
 function runGame() {
+  //print(mouseX, mouseY)
   background(152, 113, 153);
+
+  // update Snake
+  snake.update();
+  snake.show();
+  snake.checkDeath();
+
+  // draw control box
   noStroke()
-  fill(152, 113, 153);
-  rect(0, 400, 400, 200);
-
-  fill(139, 214, 189, 200);
-  rect(20, 420, 360, 160);
-
+  fill(139, 214, 189);
+  rect(0, 420, 400, 180);
   arrow(button_arrow[0][0], button_arrow[0][1], diameter, 0)
   arrow(button_arrow[1][0], button_arrow[1][1], diameter, 90)
   arrow(button_arrow[2][0], button_arrow[2][1], diameter, 180)
   arrow(button_arrow[3][0], button_arrow[3][1], diameter, 270)
 
-  fill(163, 38, 38);
-  textSize(30);
-  text(timer, width - width / 1.1, height - height / 7);
+  // draw updated score
+  textSize(15);
+  fill(255);
+  if (name == "") {
+    name = "Anonymous"
+  }
+  text("Name: " + name, 20, 440);
+  text("Score: " + score, 20, 460);
+  text("Top: " + highscore[0][0] + " " + highscore[0][1], 20, 480);
+  fill(255, 181, 251)
 
+  // draw Timer
+  fill(200, 38, 38);
+  textSize(60);
+  text(timer, 50, 550);
   if (frameCount % frame == 0 && timer > 0) {
     timer--;
   }
 
-  textSize(15);
-  fill(255);
-  text("score: " + score, 20, 440);
-  text("highscore: " + highscore[0][0] + " " + highscore[0][1], 20, 460);
-  fill(255, 181, 251)
-  text("Name: " + name, 20, 420);
-
-  snake.update();
-  snake.show();
-  snake.checkDeath();
-
+  // add more shots at specific times
   if (frameCount % (frame * 30) == 0 || frameCount % (frame * 40) == 0 ||
     frameCount % (frame * 50) == 0 || frameCount % (frame * 55) == 0) {
     setJelloShots(3, "green");
@@ -187,6 +211,7 @@ function runGame() {
     setJelloShots(2, "yellow");
   }
 
+  // draw again the eaten shots
   for (var i = 0; i < shots.length; i++) {
     stroke(0, 0, 0)
     if (shots[i][1] == "red") {
@@ -200,6 +225,7 @@ function runGame() {
     if (snake.eat(shots[i])) {
       snake.tail.push(createVector(shots[i][0].x, shots[i][0].y));
       var eaten = shots.splice(i, 1);
+      // update score when snake eat the shots
       if (eaten[0][1] == "red") {
         setJelloShots(1, "red");
         score += 10
@@ -215,19 +241,29 @@ function runGame() {
 }
 
 function updateGame() {
+  // get current time
   var time = nf(year(), 4, 0) + "-" + nf(month(), 2, 0) + "-" + nf(day(), 2, 0) + " " + nf(hour(), 2, 0) + ":" + nf(minute(), 2, 0) + ":" + nf(second(), 2, 0)
+
+  // send new doc to firestore
   firebase.firestore().collection("Records").doc(time).set({
     name: name,
     score: score,
-    time: time
+    time: time,
+    mode: mode
   }).then(function () {
     console.log("New document successfully written!");
   })
   highscore = []
+
+  // get sorted data to firestore
   firebase.firestore().collection("Records").orderBy("score", "desc").limit(5).get().then(function (querySnapshot) {
     querySnapshot.forEach(function (doc) {
-      console.log(doc.id, " => ", doc.data());
-      highscore.push([doc.data()['name'], doc.data()['score'], doc.data()['time']])
+      if (doc.data()['name'] == "") {
+        highscore.push(["Anonymous", doc.data()['score'], doc.data()['time'], doc.data()['mode']])
+      }
+      else {
+        highscore.push([doc.data()['name'], doc.data()['score'], doc.data()['time'], doc.data()['mode']])
+      }
     })
   });
   gameState = "end"
@@ -235,36 +271,57 @@ function updateGame() {
 
 function endGame() {
   background(152, 113, 153);
+
+  // draw Game Over and Your Score
   textSize(32);
   var msg = 'Game Over';
   var msgScore = 'Your Score is ' + score;
   msgWidht = textWidth(msg);
   scoreWidht = textWidth(msgScore);
   fill(255);
-  text(msg, (width - msgWidht) / 2, height / 2 - 40);
-  text(msgScore, (width - scoreWidht) / 2, height / 2);
+  text(msg, (width - msgWidht) / 2, height / 2 - 150);
+  text(msgScore, (width - scoreWidht) / 2, height / 2 - 100);
 
   // add ranking table
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
-  text(highscore[1][1], (width - msgWidht) / 2, height / 2 - 40);
+  var depth = 370
+  fill(255);
+  textSize(25)
+  text("Name", 28, depth);
+  text("Time", 270, depth);
+  text("Score", 140, depth);
 
+  textSize(18)
+  text(highscore[0][0], 18, depth + 30);
+  text(highscore[0][2], 220, depth + 30);
+  text(highscore[0][1], 150, depth + 30);
 
-  startBtn = createButton('Restart Game');
-  startBtn.position(width / 2 - startBtn.width / 2, height / 2 + 40);
+  text(highscore[1][0], 18, depth + 60);
+  text(highscore[1][2], 220, depth + 60);
+  text(highscore[1][1], 150, depth + 60);
+
+  text(highscore[2][0], 18, depth + 90);
+  text(highscore[2][2], 220, depth + 90);
+  text(highscore[2][1], 150, depth + 90);
+
+  text(highscore[3][0], 18, depth + 120);
+  text(highscore[3][2], 220, depth + 120);
+  text(highscore[3][1], 150, depth + 120);
+
+  text(highscore[4][0], 18, depth + 150);
+  text(highscore[4][2], 220, depth + 150);
+  text(highscore[4][1], 150, depth + 150);
+
+  //Restart button
+  startBtn = createButton('Try again');
+  startBtn.position(width / 2 - startBtn.width / 2, height / 2 - 60);
   shots = []
-  startBtn.mousePressed(bobHi);
+  startBtn.mousePressed(helloworld);
   noLoop();
 }
 
 
 function draw() {
+  //State machine
   if (highscore.length == 0) {
     return
   }
@@ -280,6 +337,7 @@ function draw() {
 }
 
 function setJelloShots(num, shot_type) {
+  // add more shots
   var cols = floor(width / pixel_size);
   var rows = floor(400 / pixel_size);
   for (var i = 0; i < num; i++) {
@@ -292,6 +350,7 @@ function setJelloShots(num, shot_type) {
 }
 
 function snake_intersect(location) {
+  // check if new shot is lying on the snake
   var intersect = false;
   if (location.x == snake.pos.x && location.y == snake.pos.y) {
     intersect = true;
@@ -313,34 +372,84 @@ function snake_intersect(location) {
 }
 
 function mousePressed() {
-  if (mouseX < button_arrow[0][0] + diameter / 2 && mouseX > button_arrow[0][0] - diameter / 2 &&
-    mouseY < button_arrow[0][1] + diameter / 2 && mouseY > button_arrow[0][1] - diameter / 2) {
-    movement.push([0, -1]);
-  } else if (mouseX < button_arrow[1][0] + diameter / 2 && mouseX > button_arrow[1][0] - diameter / 2 &&
-    mouseY < button_arrow[1][1] + diameter / 2 && mouseY > button_arrow[1][1] - diameter / 2) {
-    movement.push([1, 0]);
-  } else if (mouseX < button_arrow[2][0] + diameter / 2 && mouseX > button_arrow[2][0] - diameter / 2 &&
-    mouseY < button_arrow[2][1] + diameter / 2 && mouseY > button_arrow[2][1] - diameter / 2) {
-    movement.push([0, 1]);
-  } else if (mouseX < button_arrow[3][0] + diameter / 2 && mouseX > button_arrow[3][0] - diameter / 2 &&
-    mouseY < button_arrow[3][1] + diameter / 2 && mouseY > button_arrow[3][1] - diameter / 2) {
-    movement.push([-1, 0]);
+  // select game mode
+  if (gameState == "init") {
+    if (mouseX < image_loc[0][0] + image_size && mouseX > image_loc[0][0] &&
+      mouseY < image_loc[0][1] + image_size && mouseY > image_loc[0][1]) {
+      frame = 10
+      mode = "noob"
+      frameRate(frame)
+      helloworld()
+    } else if (mouseX < image_loc[1][0] + image_size && mouseX > image_loc[1][0] &&
+      mouseY < image_loc[1][1] + image_size && mouseY > image_loc[1][1]) {
+      frame = 20
+      mode = "pro"
+      frameRate(frame)
+      helloworld()
+    } else if (mouseX < image_loc[2][0] + image_size && mouseX > image_loc[2][0] &&
+      mouseY < image_loc[2][1] + image_size && mouseY > image_loc[2][1]) {
+      frame = 40
+      mode = "crazy"
+      frameRate(frame)
+      helloworld()
+    }
+  }
+  else {
+    // arrow control
+    if (mouseX < button_arrow[0][0] + diameter / 2 && mouseX > button_arrow[0][0] - diameter / 2 &&
+      mouseY < button_arrow[0][1] + diameter / 2 && mouseY > button_arrow[0][1] - diameter / 2) {
+      movement.push([0, -1]);
+    } else if (mouseX < button_arrow[1][0] + diameter / 2 && mouseX > button_arrow[1][0] - diameter / 2 &&
+      mouseY < button_arrow[1][1] + diameter / 2 && mouseY > button_arrow[1][1] - diameter / 2) {
+      movement.push([1, 0]);
+    } else if (mouseX < button_arrow[2][0] + diameter / 2 && mouseX > button_arrow[2][0] - diameter / 2 &&
+      mouseY < button_arrow[2][1] + diameter / 2 && mouseY > button_arrow[2][1] - diameter / 2) {
+      movement.push([0, 1]);
+    } else if (mouseX < button_arrow[3][0] + diameter / 2 && mouseX > button_arrow[3][0] - diameter / 2 &&
+      mouseY < button_arrow[3][1] + diameter / 2 && mouseY > button_arrow[3][1] - diameter / 2) {
+      movement.push([-1, 0]);
+    }
   }
 }
 
 function touchStarted() {
-  if (touches[0].x < button_arrow[0][0] + diameter / 2 && touches[0].x > button_arrow[0][0] - diameter / 2 &&
-    touches[0].y < button_arrow[0][1] + diameter / 2 && touches[0].y > button_arrow[0][1] - diameter / 2) {
-    movement.push([0, -1]);
-  } else if (touches[0].x < button_arrow[1][0] + diameter / 2 && touches[0].x > button_arrow[1][0] - diameter / 2 &&
-    touches[0].y < button_arrow[1][1] + diameter / 2 && touches[0].y > button_arrow[1][1] - diameter / 2) {
-    movement.push([1, 0]);
-  } else if (touches[0].x < button_arrow[2][0] + diameter / 2 && touches[0].x > button_arrow[2][0] - diameter / 2 &&
-    touches[0].y < button_arrow[2][1] + diameter / 2 && touches[0].y > button_arrow[2][1] - diameter / 2) {
-    movement.push([0, 1]);
-  } else if (touches[0].x < button_arrow[3][0] + diameter / 2 && touches[0].x > button_arrow[3][0] - diameter / 2 &&
-    touches[0].y < button_arrow[3][1] + diameter / 2 && touches[0].y > button_arrow[3][1] - diameter / 2) {
-    movement.push([-1, 0]);
+  // select game mode
+  if (gameState == "init") {
+    if (touches[0].x < image_loc[0][0] + image_size && touches[0].x > image_loc[0][0] &&
+      touches[0].y < image_loc[0][1] + image_size && touches[0].y > image_loc[0][1]) {
+      frame = 10
+      mode = "noob"
+      frameRate(frame)
+      helloworld()
+    } else if (touches[0].x < image_loc[1][0] + image_size && touches[0].x > image_loc[1][0] &&
+      touches[0].y < image_loc[1][1] + image_size && touches[0].y > image_loc[1][1]) {
+      frame = 20
+      mode = "pro"
+      frameRate(frame)
+      helloworld()
+    } else if (touches[0].x < image_loc[2][0] + image_size && touches[0].x > image_loc[2][0] &&
+      touches[0].y < image_loc[2][1] + image_size && touches[0].y > image_loc[2][1]) {
+      frame = 40
+      mode = "crazy"
+      frameRate(frame)
+      helloworld()
+    }
+  }
+  else {
+    // arrow control
+    if (touches[0].x < button_arrow[0][0] + diameter / 2 && touches[0].x > button_arrow[0][0] - diameter / 2 &&
+      touches[0].y < button_arrow[0][1] + diameter / 2 && touches[0].y > button_arrow[0][1] - diameter / 2) {
+      movement.push([0, -1]);
+    } else if (touches[0].x < button_arrow[1][0] + diameter / 2 && touches[0].x > button_arrow[1][0] - diameter / 2 &&
+      touches[0].y < button_arrow[1][1] + diameter / 2 && touches[0].y > button_arrow[1][1] - diameter / 2) {
+      movement.push([1, 0]);
+    } else if (touches[0].x < button_arrow[2][0] + diameter / 2 && touches[0].x > button_arrow[2][0] - diameter / 2 &&
+      touches[0].y < button_arrow[2][1] + diameter / 2 && touches[0].y > button_arrow[2][1] - diameter / 2) {
+      movement.push([0, 1]);
+    } else if (touches[0].x < button_arrow[3][0] + diameter / 2 && touches[0].x > button_arrow[3][0] - diameter / 2 &&
+      touches[0].y < button_arrow[3][1] + diameter / 2 && touches[0].y > button_arrow[3][1] - diameter / 2) {
+      movement.push([-1, 0]);
+    }
   }
 }
 
