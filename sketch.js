@@ -5,7 +5,7 @@ var movement = [];
 var score = 0;
 var mode = ""
 var gameState = 'init';
-var timer_set = 600
+var timer_set = 60
 var button_arrow = [
   [300, 450],
   [350, 500],
