@@ -16,7 +16,7 @@ var diameter = 50
 var name = ""
 var input
 var img_slow, img_med, img_fast
-var image_loc = [[50, 340], [150, 340], [250, 340]]
+var image_loc = [[40, 320], [150, 320], [260, 320]]
 var image_size = 64
 let highscore = []
 var song1
@@ -37,9 +37,9 @@ function preload() {
         }
       });
     })
-  img_slow = loadImage("slow.jpg")
-  img_med = loadImage("slow.jpg")
-  img_fast = loadImage("slow.jpg")
+  img_slow = loadImage("slow.png")
+  img_med = loadImage("slow.png")
+  img_fast = loadImage("slow.png")
 }
 
 function setup() {
@@ -106,14 +106,14 @@ function initGame() {
 
   // draw mode selection
   textSize(15)
-  var level = "NOOB"
-  text(level, image_loc[0][0] + image_size / 2 - textWidth(level) / 2, image_loc[0][1] - 5);
+  var level = "TRANQUIL"
+  text(level, image_loc[0][0] + image_size / 2, image_loc[0][1] - 5);
   image(img_slow, image_loc[0][0], image_loc[0][1]);
-  level = "PRO"
-  text(level, image_loc[1][0] + image_size / 2 - textWidth(level) / 2, image_loc[1][1] - 5);
+  level = "WINDY"
+  text(level, image_loc[1][0] + image_size / 2, image_loc[1][1] - 5);
   image(img_med, image_loc[1][0], image_loc[1][1]);
-  level = "CRAZY"
-  text(level, image_loc[2][0] + image_size / 2 - textWidth(level) / 2, image_loc[2][1] - 5);
+  level = "STORM"
+  text(level, image_loc[2][0] + image_size / 2, image_loc[2][1] - 5);
   image(img_fast, image_loc[2][0], image_loc[2][1]);
 
   noLoop();

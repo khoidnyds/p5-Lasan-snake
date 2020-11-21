@@ -22,7 +22,7 @@ function Snake() {
 
     this.tail.unshift(createVector(this.pos.x, this.pos.y));
     this.tail.pop();
-    print(this.pos.x, this.pos.y)
+    //print(this.pos.x, this.pos.y)
     //move the snake
     if (this.pos.x >= width) {
       this.pos.x = 0;
