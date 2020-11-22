@@ -20,7 +20,7 @@ var font_noteworthy
 var image_loc = [[40, 300], [150, 300], [260, 300]]
 var image_size = 64
 let highscore = []
-var song1
+let sound_init
 var frame = 10
 var color_code = {}
 
@@ -43,6 +43,7 @@ function preload() {
   img_bg_run_bottom = loadImage("imgs/bg_run_bottom.jpg")
   img_bg_end = loadImage("imgs/bg_end.png")
   font_noteworthy = loadFont("fonts/Noteworthy.ttf")
+  sound_init = loadSound("sounds/jazz.mp3")
 }
 
 function setup() {
@@ -57,6 +58,10 @@ function setup() {
 }
 
 function initGame() {
+  sound_init.play()
+  if (!sound_init.isPlaying()) {
+    sound_init.play()
+  }
   // background color
   image(img_bg_init, 0, 0);
 
@@ -187,6 +192,9 @@ function arrow(x, y, r, a) {
 }
 
 function runGame() {
+  if (sound_init.isPlaying()) {
+    sound_init.stop()
+  }
   // print(mouseX, mouseY)
   noStroke()
 
