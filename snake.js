@@ -1,6 +1,6 @@
 function Snake() {
   this.show = function () {
-    fill(232, 179, 211);
+    fill(0);
     noStroke()
     //draw the snake tail
     for (var i = 0; i < this.tail.length; i++) {
@@ -9,6 +9,8 @@ function Snake() {
 
     //draw the snake head
     rect(this.pos.x, this.pos.y, pixel_size, pixel_size)
+    fill(232, 179, 211);
+    circle(this.pos.x + pixel_size / 2, this.pos.y + pixel_size / 2, pixel_size / 2)
   }
 
   this.update = function () {

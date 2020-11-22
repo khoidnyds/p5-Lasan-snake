@@ -29,12 +29,7 @@ function preload() {
     .then(function (querySnapshot) {
       querySnapshot.forEach(function (doc) {
         console.log(doc.id, " => ", doc.data());
-        if (doc.data()['name'] == "") {
-          highscore.push(["Anonymous", doc.data()['score'], doc.data()['time'], doc.data()['mode']])
-        }
-        else {
-          highscore.push([doc.data()['name'], doc.data()['score'], doc.data()['time'], doc.data()['mode']])
-        }
+        highscore.push([doc.data()['name'], doc.data()['score'], doc.data()['time'], doc.data()['mode']])
       });
     })
 
@@ -81,8 +76,6 @@ function initGame() {
   circle(171, 155, 6)
 
   // draw game instructions
-  // fill(139, 214, 189, 200);
-  // rect(0, 420, 400, 180);
   stroke(0, 0, 0)
   fill(150, 39, 69);
   rect(50, 450, 20, 20);
@@ -184,6 +177,8 @@ function arrow(x, y, r, a) {
 
 function runGame() {
   //print(mouseX, mouseY)
+  noStroke()
+
   image(img_bg_run, 0, 0);
 
   // update Snake
@@ -192,9 +187,6 @@ function runGame() {
   snake.checkDeath();
 
   // draw control box
-  noStroke()
-  fill(139, 214, 189);
-  rect(0, 420, 400, 180);
   arrow(button_arrow[0][0], button_arrow[0][1], diameter, 0)
   arrow(button_arrow[1][0], button_arrow[1][1], diameter, 90)
   arrow(button_arrow[2][0], button_arrow[2][1], diameter, 180)
@@ -227,7 +219,7 @@ function runGame() {
     setJelloShots(2, "yellow");
   }
 
-  // draw again the eaten shots
+  // draw shots
   for (var i = 0; i < shots.length; i++) {
     stroke(0, 0, 0)
     if (shots[i][1] == "red") {
@@ -238,6 +230,8 @@ function runGame() {
       fill(66, 61, 122)
     }
     rect(shots[i][0].x, shots[i][0].y, pixel_size, pixel_size);
+
+    // draw again the eaten shots
     if (snake.eat(shots[i])) {
       snake.tail.push(createVector(shots[i][0].x, shots[i][0].y));
       var eaten = shots.splice(i, 1);
@@ -274,12 +268,7 @@ function updateGame() {
   // get sorted data to firestore
   firebase.firestore().collection("Records").orderBy("score", "desc").limit(5).get().then(function (querySnapshot) {
     querySnapshot.forEach(function (doc) {
-      if (doc.data()['name'] == "") {
-        highscore.push(["Anonymous", doc.data()['score'], doc.data()['time'], doc.data()['mode']])
-      }
-      else {
-        highscore.push([doc.data()['name'], doc.data()['score'], doc.data()['time'], doc.data()['mode']])
-      }
+      highscore.push([doc.data()['name'], doc.data()['score'], doc.data()['time'], doc.data()['mode']])
     })
   });
   gameState = "end"
@@ -292,11 +281,9 @@ function endGame() {
   textSize(32);
   var msg = 'Game Over';
   var msgScore = 'Your Score is ' + score;
-  msgWidht = textWidth(msg);
-  scoreWidht = textWidth(msgScore);
   fill(255);
-  text(msg, (width - msgWidht) / 2, height / 2 - 150);
-  text(msgScore, (width - scoreWidht) / 2, height / 2 - 100);
+  text(msg, (width - textWidth(msg)) / 2, height / 2 - 150);
+  text(msgScore, (width - textWidth(msgScore)) / 2, height / 2 - 100);
 
   // add ranking table
   var depth = 370
@@ -305,27 +292,12 @@ function endGame() {
   text("Name", 28, depth);
   text("Time", 270, depth);
   text("Score", 140, depth);
-
   textSize(18)
-  text(highscore[0][0], 18, depth + 30);
-  text(highscore[0][2], 220, depth + 30);
-  text(highscore[0][1], 150, depth + 30);
-
-  text(highscore[1][0], 18, depth + 60);
-  text(highscore[1][2], 220, depth + 60);
-  text(highscore[1][1], 150, depth + 60);
-
-  text(highscore[2][0], 18, depth + 90);
-  text(highscore[2][2], 220, depth + 90);
-  text(highscore[2][1], 150, depth + 90);
-
-  text(highscore[3][0], 18, depth + 120);
-  text(highscore[3][2], 220, depth + 120);
-  text(highscore[3][1], 150, depth + 120);
-
-  text(highscore[4][0], 18, depth + 150);
-  text(highscore[4][2], 220, depth + 150);
-  text(highscore[4][1], 150, depth + 150);
+  for (var i = 0; i < 5; i++) {
+    text(highscore[i][0], 18, depth + 30 * (i + 1));
+    text(highscore[i][2], 220, depth + 30 * (i + 1));
+    text(highscore[i][1], 150, depth + 30 * (i + 1));
+  }
 
   //Restart button
   startBtn = createButton('Try again');
