@@ -102,7 +102,7 @@ function initGame() {
   fill(80, 59, 82);
   text("Your name :", 50, 250);
   input = createInput("").attribute('maxlength', 10);
-  input.position(145, 230);
+  input.position(150, 230);
   text("Top player :  " + highscore[0][0] + "  -  Score: " + highscore[0][1], 50, 280);
 
   // draw mode selection
