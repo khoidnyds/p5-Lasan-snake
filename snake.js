@@ -9,7 +9,7 @@ function Snake() {
 
     //draw the snake head
     rect(this.pos.x, this.pos.y, pixel_size, pixel_size)
-    fill(232, 179, 211);
+    fill(231, 199, 242);
     circle(this.pos.x + pixel_size / 2, this.pos.y + pixel_size / 2, pixel_size / 2)
   }
 
@@ -34,12 +34,12 @@ function Snake() {
       this.pos.x = width - pixel_size;
       this.pos.y += this.speed.y * pixel_size;
     }
-    else if (this.pos.y >= 401) {
+    else if (this.pos.y >= 381) {
       this.pos.y = 0;
       this.pos.x += this.speed.x * pixel_size;
     }
     else if (this.pos.y < 0) {
-      this.pos.y = 420 - pixel_size;
+      this.pos.y = 400 - pixel_size;
       this.pos.x += this.speed.x * pixel_size;
     }
     else {

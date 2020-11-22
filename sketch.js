@@ -1,6 +1,6 @@
 var snake;
 var pixel_size = 20;
-var shots = [];
+var foods = [];
 var movement = [];
 var score = 0;
 var mode = ""
@@ -15,12 +15,14 @@ var button_arrow = [
 var diameter = 50
 var name = ""
 var input
-var img_slow, img_med, img_fast, img_bg_init, img_bg_run
+var img_slow, img_med, img_fast, img_bg_init, img_bg_run_top, img_bg_run_bottom, img_bg_end
+var font_noteworthy
 var image_loc = [[40, 300], [150, 300], [260, 300]]
 var image_size = 64
 let highscore = []
 var song1
 var frame = 10
+var color_code = {}
 
 function preload() {
   // get data from firestore
@@ -37,13 +39,21 @@ function preload() {
   img_med = loadImage("imgs/windy.png")
   img_fast = loadImage("imgs/storm.png")
   img_bg_init = loadImage("imgs/bg_init.png")
-  img_bg_run = loadImage("imgs/bg_run.png")
+  img_bg_run_top = loadImage("imgs/bg_run_top.png")
+  img_bg_run_bottom = loadImage("imgs/bg_run_bottom.jpg")
+  img_bg_end = loadImage("imgs/bg_end.png")
   font_noteworthy = loadFont("fonts/Noteworthy.ttf")
 }
 
 function setup() {
   createCanvas(400, 600);
   frameRate(10);
+  color_code = {
+    'food_red': color(166, 47, 38),
+    'food_yellow': color(235, 196, 59),
+    'food_green': color(127, 167, 173),
+    'food_stroke': color(143, 111, 11)
+  }
 }
 
 function initGame() {
@@ -76,15 +86,16 @@ function initGame() {
   circle(171, 155, 6)
 
   // draw game instructions
-  stroke(0, 0, 0)
-  fill(150, 39, 69);
+  stroke(color_code['food_stroke'])
+  fill(color_code['food_red']);
   rect(50, 450, 20, 20);
-  fill(235, 196, 59);
+  fill(color_code['food_yellow']);
   rect(50, 490, 20, 20);
-  fill(66, 61, 122);
+  fill(color_code['food_green']);
   rect(50, 530, 20, 20);
   noStroke()
-  fill(224, 181, 70)
+  fill(232, 190, 186)
+
   textSize(18)
   text("+ 10 points", 100, 467);
   text("+ 3  points", 100, 507);
@@ -140,9 +151,9 @@ function helloworld() {
 
   // create Snake object
   snake = new Snake();
-  setJelloShots(3, "green");
-  setJelloShots(1, "red");
-  setJelloShots(2, "yellow");
+  setFood(3, "green");
+  setFood(1, "red");
+  setFood(2, "yellow");
   loop();
 }
 
@@ -176,10 +187,10 @@ function arrow(x, y, r, a) {
 }
 
 function runGame() {
-  //print(mouseX, mouseY)
+  // print(mouseX, mouseY)
   noStroke()
 
-  image(img_bg_run, 0, 0);
+  image(img_bg_run_top, 1, 0);
 
   // update Snake
   snake.update();
@@ -187,63 +198,67 @@ function runGame() {
   snake.checkDeath();
 
   // draw control box
+  image(img_bg_run_bottom, 0, 399);
   arrow(button_arrow[0][0], button_arrow[0][1], diameter, 0)
   arrow(button_arrow[1][0], button_arrow[1][1], diameter, 90)
   arrow(button_arrow[2][0], button_arrow[2][1], diameter, 180)
   arrow(button_arrow[3][0], button_arrow[3][1], diameter, 270)
 
   // draw updated score
-  textSize(15);
-  fill(255);
+  textSize(18);
+  fill(198, 185, 199)
+
   if (name == "") {
     name = "Anonymous"
   }
-  text("Name: " + name, 20, 440);
-  text("Score: " + score, 20, 460);
-  text("Top: " + highscore[0][0] + " " + highscore[0][1], 20, 480);
-  fill(255, 181, 251)
+  text("Name: " + name, 20, 510);
+  text("Score: " + score, 20, 540);
+  text("Top: " + highscore[0][0] + " " + highscore[0][1], 20, 570);
+  noStroke()
 
   // draw Timer
   fill(200, 38, 38);
-  textSize(60);
-  text(timer, 50, 550);
+  stroke(189, 180, 134);
+  strokeWeight(2)
+  textSize(50);
+  text(timer, 30, 470);
   if (frameCount % frame == 0 && timer > 0) {
     timer--;
   }
 
-  // add more shots at specific times
+  // add more foods at specific times
   if (frameCount % (frame * 30) == 0 || frameCount % (frame * 40) == 0 ||
     frameCount % (frame * 50) == 0 || frameCount % (frame * 55) == 0) {
-    setJelloShots(3, "green");
-    setJelloShots(1, "red");
-    setJelloShots(2, "yellow");
+    setFood(3, "green");
+    setFood(1, "red");
+    setFood(2, "yellow");
   }
 
-  // draw shots
-  for (var i = 0; i < shots.length; i++) {
-    stroke(0, 0, 0)
-    if (shots[i][1] == "red") {
-      fill(166, 47, 38)
-    } else if (shots[i][1] == "yellow") {
-      fill(235, 196, 59)
-    } else if (shots[i][1] == "green") {
-      fill(66, 61, 122)
+  // draw foods
+  for (var i = 0; i < foods.length; i++) {
+    stroke(color_code['food_stroke'])
+    if (foods[i][1] == "red") {
+      fill(color_code['food_red'])
+    } else if (foods[i][1] == "yellow") {
+      fill(color_code['food_yellow'])
+    } else if (foods[i][1] == "green") {
+      fill(color_code['food_green'])
     }
-    rect(shots[i][0].x, shots[i][0].y, pixel_size, pixel_size);
+    rect(foods[i][0].x, foods[i][0].y, pixel_size, pixel_size);
 
-    // draw again the eaten shots
-    if (snake.eat(shots[i])) {
-      snake.tail.push(createVector(shots[i][0].x, shots[i][0].y));
-      var eaten = shots.splice(i, 1);
-      // update score when snake eat the shots
+    // draw again the eaten foods
+    if (snake.eat(foods[i])) {
+      snake.tail.push(createVector(foods[i][0].x, foods[i][0].y));
+      var eaten = foods.splice(i, 1);
+      // update score when snake eat the foods
       if (eaten[0][1] == "red") {
-        setJelloShots(1, "red");
+        setFood(1, "red");
         score += 10
       } else if (eaten[0][1] == "yellow") {
-        setJelloShots(1, "yellow");
+        setFood(1, "yellow");
         score += 3
       } else if (eaten[0][1] == "green") {
-        setJelloShots(1, "green");
+        setFood(1, "green");
         score += 1
       }
     }
@@ -275,21 +290,28 @@ function updateGame() {
 }
 
 function endGame() {
-  background(152, 113, 153);
+  image(img_bg_end, 0, 0);
 
   // draw Game Over and Your Score
-  textSize(32);
+  textSize(65);
   var msg = 'Game Over';
   var msgScore = 'Your Score is ' + score;
-  fill(255);
-  text(msg, (width - textWidth(msg)) / 2, height / 2 - 150);
-  text(msgScore, (width - textWidth(msgScore)) / 2, height / 2 - 100);
+  msgWidht = textWidth(msg);
+  scoreWidht = textWidth(msgScore);
+
+  stroke(170, 56, 71);
+  strokeWeight(4)
+  fill(198, 185, 199)
+  text(msg, (width - msgWidht) / 2, height / 2 - 120);
+  textSize(28);
+  text(msgScore, (width - scoreWidht) / 2 + 110, height / 2 - 70);
+  noStroke()
 
   // add ranking table
   var depth = 370
-  fill(255);
-  textSize(25)
-  text("Name", 28, depth);
+  fill(245, 225, 223);
+  textSize(20)
+  text("Name", 40, depth);
   text("Time", 270, depth);
   text("Score", 140, depth);
   textSize(18)
@@ -302,7 +324,7 @@ function endGame() {
   //Restart button
   startBtn = createButton('Try again');
   startBtn.position(width / 2 - startBtn.width / 2, height / 2 - 60);
-  shots = []
+  foods = []
   startBtn.mousePressed(helloworld);
   noLoop();
 }
@@ -324,8 +346,8 @@ function draw() {
   }
 }
 
-function setJelloShots(num, shot_type) {
-  // add more shots
+function setFood(num, shot_type) {
+  // add more foods
   var cols = floor(width / pixel_size);
   var rows = floor(400 / pixel_size);
   for (var i = 0; i < num; i++) {
@@ -333,7 +355,7 @@ function setJelloShots(num, shot_type) {
     while (snake_intersect(location)) {
       location = createVector(floor(random(cols)), floor(random(rows))).mult(pixel_size);
     }
-    shots.push([location, shot_type]);
+    foods.push([location, shot_type]);
   }
 }
 
@@ -349,8 +371,8 @@ function snake_intersect(location) {
         break;
       }
     }
-    for (var i = 0; i < shots.length; i++) {
-      if (location.x == shots[i][0].x && location.y == shots[i][0].y) {
+    for (var i = 0; i < foods.length; i++) {
+      if (location.x == foods[i][0].x && location.y == foods[i][0].y) {
         intersect = true;
         break;
       }
