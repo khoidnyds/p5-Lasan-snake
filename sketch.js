@@ -4,7 +4,7 @@ var foods = [];
 var movement = [];
 var score = 0;
 var mode = ""
-var gameState = 'init';
+var gameState = 'end';
 var timer_set = 60
 var button_arrow = [
   [300, 450],
@@ -74,7 +74,7 @@ function initGame() {
   text("Snake Game", 30, 130);
 
   // draw snake icon
-  stroke(0)
+  stroke(56, 45, 59)
   noFill()
   strokeWeight(8)
   beginShape();
@@ -151,7 +151,7 @@ function helloworld() {
   // restart game metrics
   timer = timer_set
   score = 0
-  gameState = 'play';
+  gameState = 'end';
   frameCount = 1
 
   // create Snake object
@@ -315,18 +315,38 @@ function endGame() {
   text(msgScore, (width - scoreWidht) / 2 + 110, height / 2 - 70);
   noStroke()
 
+  // draw snake icon
+  stroke(56, 45, 59)
+  noFill()
+  strokeWeight(8)
+  beginShape();
+  vertex(180, 160);
+  quadraticVertex(220, 160, 190, 190);
+  quadraticVertex(160, 220, 230, 210);
+  circle(176, 160, 8)
+  circle(167, 161, 9)
+  circle(171, 154, 5)
+  endShape();
+  strokeWeight(1);
+  noStroke()
+  fill(255, 181, 251)
+  circle(171, 155, 6)
+
   // add ranking table
-  var depth = 370
-  fill(245, 225, 223);
-  textSize(20)
-  text("Name", 40, depth);
-  text("Time", 270, depth);
-  text("Score", 140, depth);
+  var depth = 350
+  fill(244, 242, 227);
+  textSize(22)
+  stroke(170, 56, 71);
+  strokeWeight(2)
+  fill(198, 185, 199)
+  text("Name", 100, depth);
+  text("Score", 250, depth);
   textSize(18)
+  fill(245, 225, 223);
+  noStroke()
   for (var i = 0; i < 5; i++) {
-    text(highscore[i][0], 18, depth + 30 * (i + 1));
-    text(highscore[i][2], 220, depth + 30 * (i + 1));
-    text(highscore[i][1], 150, depth + 30 * (i + 1));
+    text(highscore[i][0], 100, depth + 30 * (i + 1));
+    text(highscore[i][1], 270, depth + 30 * (i + 1));
   }
 
   //Restart button

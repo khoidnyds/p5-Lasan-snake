@@ -1,6 +1,6 @@
 function Snake() {
   this.show = function () {
-    fill(0);
+    fill(56, 45, 59);
     noStroke()
     //draw the snake tail
     for (var i = 0; i < this.tail.length; i++) {
