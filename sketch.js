@@ -15,8 +15,8 @@ var button_arrow = [
 var diameter = 50
 var name = ""
 var input
-var img_slow, img_med, img_fast
-var image_loc = [[40, 320], [150, 320], [260, 320]]
+var img_slow, img_med, img_fast, img_bg_init, img_bg_run
+var image_loc = [[40, 300], [150, 300], [260, 300]]
 var image_size = 64
 let highscore = []
 var song1
@@ -37,9 +37,13 @@ function preload() {
         }
       });
     })
-  img_slow = loadImage("slow.png")
-  img_med = loadImage("slow.png")
-  img_fast = loadImage("slow.png")
+
+  img_slow = loadImage("imgs/calm.png")
+  img_med = loadImage("imgs/windy.png")
+  img_fast = loadImage("imgs/storm.png")
+  img_bg_init = loadImage("imgs/bg_init.png")
+  img_bg_run = loadImage("imgs/bg_run.png")
+  font_noteworthy = loadFont("fonts/Noteworthy.ttf")
 }
 
 function setup() {
@@ -49,14 +53,18 @@ function setup() {
 
 function initGame() {
   // background color
-  background(152, 113, 153);
+  image(img_bg_init, 0, 0);
 
   //draw SNAKE GAME
-  textSize(55);
-  fill(237, 209, 233)
-  text("SNAKE GAME", 20, 130);
+  stroke(170, 56, 71);
+  strokeWeight(4)
+  textSize(70);
+  textFont(font_noteworthy);
+  fill(198, 185, 199)
+  text("Snake Game", 30, 130);
 
   // draw snake icon
+  stroke(0)
   noFill()
   strokeWeight(8)
   beginShape();
@@ -73,8 +81,8 @@ function initGame() {
   circle(171, 155, 6)
 
   // draw game instructions
-  fill(139, 214, 189, 200);
-  rect(0, 420, 400, 180);
+  // fill(139, 214, 189, 200);
+  // rect(0, 420, 400, 180);
   stroke(0, 0, 0)
   fill(150, 39, 69);
   rect(50, 450, 20, 20);
@@ -83,38 +91,46 @@ function initGame() {
   fill(66, 61, 122);
   rect(50, 530, 20, 20);
   noStroke()
-  fill(54, 52, 53)
-  textSize(20)
-  text("+10 score", 100, 467);
-  text("+ 3  score", 100, 507);
-  text("+ 1  score", 100, 547);
-  textSize(15)
-  fill(54, 52, 53)
+  fill(224, 181, 70)
+  textSize(18)
+  text("+ 10 points", 100, 467);
+  text("+ 3  points", 100, 507);
+  text("+  1   point", 100, 547);
+  textSize(18)
+  fill(224, 181, 70)
   text("Limited time", 260, 470);
   textSize(40)
-  fill(255, 0, 0)
-  text("60s", 270, 520);
+  fill(224, 70, 70)
+  text("60s", 260, 520);
 
   // draw input name box + highscore
   nameWidht = textWidth(name);
   textSize(20)
-  fill(139, 214, 189);
-  text("Your name:", 50, 250);
+  fill(80, 59, 82);
+  text("Your name :", 50, 250);
   input = createInput("").attribute('maxlength', 10);
-  input.position(160, 250);
-  text("Top player: " + highscore[0][0] + " - Score: " + highscore[0][1], 50, 290);
+  input.position(145, 230);
+  text("Top player :  " + highscore[0][0] + "  -  Score: " + highscore[0][1], 50, 280);
 
   // draw mode selection
-  textSize(15)
-  var level = "TRANQUIL"
-  text(level, image_loc[0][0] + image_size / 2, image_loc[0][1] - 5);
+  textSize(13)
+
+  var level = "C A L M"
   image(img_slow, image_loc[0][0], image_loc[0][1]);
-  level = "WINDY"
-  text(level, image_loc[1][0] + image_size / 2, image_loc[1][1] - 5);
+  stroke(163, 46, 13);
+  strokeWeight(4)
+  fill(255, 241, 237)
+  // textFont('Avenir');
+  text(level, image_loc[0][0] + image_size / 2, image_loc[0][1] + 50);
+
+  level = "W I N D Y"
   image(img_med, image_loc[1][0], image_loc[1][1]);
-  level = "STORM"
-  text(level, image_loc[2][0] + image_size / 2, image_loc[2][1] - 5);
-  image(img_fast, image_loc[2][0], image_loc[2][1]);
+  text(level, image_loc[1][0] + image_size / 2, image_loc[1][1] + 50);
+
+  level = "S T O R M"
+  image(img_fast, image_loc[2][0] - 3, image_loc[2][1]);
+
+  text(level, image_loc[2][0] + image_size / 2 - 10, image_loc[2][1] + 50);
 
   noLoop();
 }
@@ -168,7 +184,7 @@ function arrow(x, y, r, a) {
 
 function runGame() {
   //print(mouseX, mouseY)
-  background(152, 113, 153);
+  image(img_bg_run, 0, 0);
 
   // update Snake
   snake.update();
