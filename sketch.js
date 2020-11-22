@@ -4,7 +4,7 @@ var foods = [];
 var movement = [];
 var score = 0;
 var mode = ""
-var gameState = 'end';
+var gameState = 'init';
 var timer_set = 60
 var button_arrow = [
   [300, 450],
@@ -15,7 +15,7 @@ var button_arrow = [
 var diameter = 50
 var name = ""
 var input
-var img_slow, img_med, img_fast, img_bg_init, img_bg_run_top, img_bg_run_bottom, img_bg_end
+var img_slow, img_med, img_fast, img_bg_init, img_bg_run_top, img_bg_run_bottom, img_bg_end, img_tryagain
 var font_noteworthy
 var image_loc = [[40, 300], [150, 300], [260, 300]]
 var image_size = 64
@@ -25,6 +25,22 @@ var frame = 10
 var color_code = {}
 
 function preload() {
+  // First perform the query
+  firebase.firestore().collection('Records').where('name', '==', "Anonymous").get()
+    .then(function (querySnapshot) {
+      // Once we get the results, begin a batch
+      var batch = firebase.firestore().batch();
+
+      querySnapshot.forEach(function (doc) {
+        // For each doc, add a delete operation to the batch
+        batch.delete(doc.ref);
+      });
+
+      // Commit the batch
+      return batch.commit();
+    }).then(function () {
+      print("Deleted anonymoys records")
+    });
   // get data from firestore
   firebase.firestore().collection("Records").orderBy("score", "desc").limit(5)
     .get()
@@ -42,8 +58,10 @@ function preload() {
   img_bg_run_top = loadImage("imgs/bg_run_top.png")
   img_bg_run_bottom = loadImage("imgs/bg_run_bottom.jpg")
   img_bg_end = loadImage("imgs/bg_end.png")
+  img_tryagain = loadImage("imgs/tryagain.png")
   font_noteworthy = loadFont("fonts/Noteworthy.ttf")
   sound_init = loadSound("sounds/jazz.mp3")
+  sound_water = loadSound("sounds/water.mp3")
 }
 
 function setup() {
@@ -58,10 +76,7 @@ function setup() {
 }
 
 function initGame() {
-  sound_init.play()
-  if (!sound_init.isPlaying()) {
-    sound_init.play()
-  }
+  sound_init.loop()
   // background color
   image(img_bg_init, 0, 0);
 
@@ -117,7 +132,12 @@ function initGame() {
   textSize(20)
   fill(80, 59, 82);
   text("Your name :", 50, 250);
-  input = createInput("").attribute('maxlength', 10);
+  if (name == "") {
+    input = createInput("").attribute('maxlength', 10);
+  }
+  else {
+    input = createInput(name).attribute('maxlength', 10);
+  }
   input.position(150, 230);
   text("Top player :  " + highscore[0][0] + "  -  Score: " + highscore[0][1], 50, 280);
 
@@ -151,7 +171,7 @@ function helloworld() {
   // restart game metrics
   timer = timer_set
   score = 0
-  gameState = 'end';
+  gameState = 'play';
   frameCount = 1
 
   // create Snake object
@@ -192,9 +212,9 @@ function arrow(x, y, r, a) {
 }
 
 function runGame() {
-  if (sound_init.isPlaying()) {
-    sound_init.stop()
-  }
+  sound_init.stop()
+  if (!sound_water.isPlaying())
+    sound_water.play()
   // print(mouseX, mouseY)
   noStroke()
 
@@ -315,23 +335,6 @@ function endGame() {
   text(msgScore, (width - scoreWidht) / 2 + 110, height / 2 - 70);
   noStroke()
 
-  // draw snake icon
-  stroke(56, 45, 59)
-  noFill()
-  strokeWeight(8)
-  beginShape();
-  vertex(180, 160);
-  quadraticVertex(220, 160, 190, 190);
-  quadraticVertex(160, 220, 230, 210);
-  circle(176, 160, 8)
-  circle(167, 161, 9)
-  circle(171, 154, 5)
-  endShape();
-  strokeWeight(1);
-  noStroke()
-  fill(255, 181, 251)
-  circle(171, 155, 6)
-
   // add ranking table
   var depth = 350
   fill(244, 242, 227);
@@ -350,10 +353,9 @@ function endGame() {
   }
 
   //Restart button
-  startBtn = createButton('Try again');
-  startBtn.position(width / 2 - startBtn.width / 2, height / 2 - 60);
   foods = []
-  startBtn.mousePressed(helloworld);
+  //try again
+  image(img_tryagain, width / 2 - 75, height / 2 - 60)
   noLoop();
 }
 
@@ -432,6 +434,14 @@ function mousePressed() {
       helloworld()
     }
   }
+  else if (gameState == "end") {
+    //width / 2 - 75, height / 2 - 60
+    if (mouseX < width / 2 - 75 + 150 && mouseX > width / 2 - 75 &&
+      mouseY < height / 2 - 60 + 100 && mouseY > height / 2 - 60) {
+      gameState = "init"
+      initGame()
+    }
+  }
   else {
     // arrow control
     if (mouseX < button_arrow[0][0] + diameter / 2 && mouseX > button_arrow[0][0] - diameter / 2 &&
@@ -471,6 +481,14 @@ function touchStarted() {
       mode = "crazy"
       frameRate(frame)
       helloworld()
+    }
+  }
+  else if (gameState == "end") {
+    //width / 2 - 75, height / 2 - 60
+    if (touches[0].x < width / 2 - 75 + 150 && touches[0].x > width / 2 - 75 &&
+      touches[0].y < height / 2 - 60 + 100 && touches[0].y > height / 2 - 60) {
+      gameState = "init"
+      initGame()
     }
   }
   else {
