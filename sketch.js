@@ -25,18 +25,13 @@ var frame = 10
 var color_code = {}
 
 function preload() {
-  // First perform the query
+  // Clean the database
   firebase.firestore().collection('Records').where('name', '==', "Anonymous").get()
     .then(function (querySnapshot) {
-      // Once we get the results, begin a batch
       var batch = firebase.firestore().batch();
-
       querySnapshot.forEach(function (doc) {
-        // For each doc, add a delete operation to the batch
         batch.delete(doc.ref);
       });
-
-      // Commit the batch
       return batch.commit();
     }).then(function () {
       print("Deleted anonymoys records")
