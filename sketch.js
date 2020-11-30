@@ -21,8 +21,10 @@ var image_loc = [[40, 300], [150, 300], [260, 300]]
 var image_size = 64
 let highscore = []
 let sound_init
+let sound_water
 var frame = 10
 var color_code = {}
+var touch_event = 0
 
 function preload() {
   // Clean the database
@@ -174,6 +176,7 @@ function helloworld() {
   setFood(3, "green");
   setFood(1, "red");
   setFood(2, "yellow");
+  sound_init.stop()
   loop();
 }
 
@@ -204,13 +207,13 @@ function arrow(x, y, r, a) {
   var q4 = rotatePoint([-r / 9, -r / 5 + h], a, [x, y])
   triangle(t1[0], t1[1], t2[0], t2[1], t3[0], t3[1]);
   quad(q1[0], q1[1], q2[0], q2[1], q3[0], q3[1], q4[0], q4[1])
+
 }
 
 function runGame() {
-  sound_init.stop()
   if (!sound_water.isPlaying())
     sound_water.play()
-  // print(mouseX, mouseY)
+  //print(mouseX, mouseY)
   noStroke()
 
   image(img_bg_run_top, 1, 0);
@@ -455,7 +458,11 @@ function mousePressed() {
   }
 }
 
-function touchStarted() {
+function touchStarted(event) {
+  if (touches.length > 1) {
+    return false
+  }
+
   // select game mode
   if (gameState == "init") {
     if (touches[0].x < image_loc[0][0] + image_size && touches[0].x > image_loc[0][0] &&
@@ -477,6 +484,7 @@ function touchStarted() {
       frameRate(frame)
       helloworld()
     }
+    return false
   }
   else if (gameState == "end") {
     //width / 2 - 75, height / 2 - 60
@@ -485,6 +493,7 @@ function touchStarted() {
       gameState = "init"
       initGame()
     }
+    return false
   }
   else {
     // arrow control
@@ -501,6 +510,7 @@ function touchStarted() {
       touches[0].y < button_arrow[3][1] + diameter / 2 && touches[0].y > button_arrow[3][1] - diameter / 2) {
       movement.push([-1, 0]);
     }
+    return false
   }
 }
 
@@ -514,4 +524,17 @@ function keyPressed() {
   } else if (keyCode === RIGHT_ARROW) {
     movement.push([1, 0]);
   }
+}
+
+/* prevents the mobile browser from processing some default
+ * touch events, like swiping left for "back" or scrolling
+ * the page.
+ */
+document.ontouchmove = function (event) {
+  event.preventDefault();
+};
+
+function touchMoved() {
+  // prevent default
+  return false;
 }
